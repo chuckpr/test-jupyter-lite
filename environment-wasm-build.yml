@@ -23,5 +23,3 @@ dependencies:
   - jupyterlite-core
   - jupyter_server
   - jupyterlite-xeus
-  # extra 
-  - r-tidyverse
