@@ -27,18 +27,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch xeus-r build assets
-        run: |
-          echo "Cloning xeus-r repository to get hera directory and CMakeLists.txt..."
-          git clone --depth 1 https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
-          cp -r temp-xeus-r/share/ ./
-          cp -r temp-xeus-r/include/ ./
-          cp -r temp-xeus-r/cmake ./
-          cp -r temp-xeus-r/hera ./
-          cp temp-xeus-r/CMakeLists.txt ./
-          cp temp-xeus-r/xeus-rConfig.cmake.in ./
-          rm -rf temp-xeus-r
-
       - name: Install mamba
         uses: mamba-org/setup-micromamba@main
         with:
@@ -52,6 +40,9 @@ jobs:
       - name: Build xeus-r
         shell: bash -l {0}
         run: |
+          git clone --depth 1 https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
+          cd temp-xeus-r
+
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
 
           set -eux
