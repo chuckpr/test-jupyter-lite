@@ -27,18 +27,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Fetch the hera directory from the upstream xeus-r repository
-      - name: Fetch hera directory from xeus-r
+      - name: Fetch hera directory and CMakeLists.txt from xeus-r
         run: |
-          echo "Cloning xeus-r repository to get hera directory..."
+          echo "Cloning xeus-r repository to get hera directory and CMakeLists.txt..."
           git clone --depth 1 --filter=blob:none --sparse https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
           cd temp-xeus-r
-          git sparse-checkout set hera
+          git sparse-checkout set hera CMakeLists.txt
           cd ..
           cp -r temp-xeus-r/hera ./
+          cp temp-xeus-r/CMakeLists.txt ./
           rm -rf temp-xeus-r
           echo "hera directory contents:"
           ls -la hera/
+          echo "CMakeLists.txt:"
+          ls -la CMakeLists.txt
 
       - name: Install mamba
         uses: mamba-org/setup-micromamba@main
@@ -110,7 +112,7 @@ jobs:
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --XeusAddon.mounts=${{ env.PREFIX }}/lib/R/library/hera:/lib/R/library/hera \
               --contents README.md \
-              --contents notebooks/xeus-r.ipynb \
+              --contents content \
               --output-dir dist
 
       - name: Upload artifact
