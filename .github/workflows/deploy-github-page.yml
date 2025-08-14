@@ -1,0 +1,123 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+    - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Github-page
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install mamba
+        uses: mamba-org/setup-micromamba@main
+        with:
+          environment-file: environment-wasm-build.yml
+          init-shell: bash
+          environment-name: xeus-r-wasm-build
+
+      - name: Set ncpus
+        run: echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
+
+      - name: Build xeus-r
+        shell: bash -l {0}
+        run: |
+          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
+
+          set -eux
+
+          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-host
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          export CMAKE_PREFIX_PATH=$PREFIX
+          export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
+
+          # NOTE: this is needed to build hera without cross-r-base
+          export BUILD_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-r-wasm-build
+          echo "R_HOME=${PREFIX}/lib/R"       > "${BUILD_PREFIX}/lib/R/etc/Makeconf"
+          cat "${PREFIX}/lib/R/etc/Makeconf" >> "${BUILD_PREFIX}/lib/R/etc/Makeconf"
+
+          # Dependencies for hera
+          libraries=(
+            jsonlite
+            rlang
+            base64enc
+            digest
+            fastmap
+            htmltools
+            cli
+            glue
+            vctrs
+          )
+
+          for library in "${libraries[@]}"; do
+              # Create a backup
+              echo "Backup $library"
+              mv $PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so.bak
+              cp $BUILD_PREFIX/lib/R/library/$library/libs/$library.so $PREFIX/lib/R/library/$library/libs/$library.so
+          done
+
+          ${BUILD_PREFIX}/bin/R CMD INSTALL ./hera --no-byte-compile --no-test-load --library=$PREFIX/lib/R/library/
+
+          emcmake cmake . \
+            -DCMAKE_BUILD_TYPE=Release                        \
+            -DCMAKE_PREFIX_PATH=$PREFIX                       \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX                    \
+            -DCMAKE_FIND_ROOT_PATH=$PREFIX                    \
+            -DXEUS_R_EMSCRIPTEN_WASM_BUILD=ON
+          emmake make -j ${{ env.ncpus }} install
+
+          # Restore libraries
+          for library in "${libraries[@]}"; do
+              rm $PREFIX/lib/R/library/$library/libs/$library.so
+              mv $PREFIX/lib/R/library/$library/libs/$library.so.bak $PREFIX/lib/R/library/$library/libs/$library.so
+          done
+
+      - name: Jupyter Lite integration
+        shell: bash -l {0}
+        run: |
+          jupyter lite build \
+              --XeusAddon.prefix=${{ env.PREFIX }} \
+              --XeusAddon.mounts=${{ env.PREFIX }}/lib/R/library/hera:/lib/R/library/hera \
+              --contents README.md \
+              --contents notebooks/xeus-r.ipynb \
+              --output-dir dist
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
