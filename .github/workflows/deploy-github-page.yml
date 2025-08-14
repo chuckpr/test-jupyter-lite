@@ -41,6 +41,7 @@ jobs:
         shell: bash -l {0}
         run: |
           git clone --depth 1 https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
+          cp environment-wasm-host.yml temp-xeus-r/
           cd temp-xeus-r
 
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32

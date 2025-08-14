@@ -1,6 +1,7 @@
 name: xeus-r-wasm-host
 channels:
   - https://repo.prefix.dev/emscripten-forge-dev
+  - https://repo.prefix.dev/conda-forge
   - conda-forge
 dependencies:
   # Host dependencies
@@ -29,3 +30,4 @@ dependencies:
   - r-ggplot2
   - r-munsell >=0.5.1
   - r-colorspace
+  - r-tidyverse
