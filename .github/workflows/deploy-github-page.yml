@@ -39,8 +39,6 @@ jobs:
           rm -rf temp-xeus-r
           echo "hera directory contents:"
           ls -la hera/
-          echo "CMakeLists.txt:"
-          cat CMakeLists.txt
 
       - name: Install mamba
         uses: mamba-org/setup-micromamba@main
