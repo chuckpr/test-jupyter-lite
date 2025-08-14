@@ -32,10 +32,9 @@ jobs:
           echo "Cloning xeus-r repository to get hera directory and CMakeLists.txt..."
           git clone --depth 1 --filter=blob:none --sparse https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
           cd temp-xeus-r
-          git sparse-checkout set hera CMakeLists.txt
+          git sparse-checkout set hera
           cd ..
           cp -r temp-xeus-r/hera ./
-          cp temp-xeus-r/CMakeLists.txt ./
           rm -rf temp-xeus-r
           echo "hera directory contents:"
           ls -la hera/
