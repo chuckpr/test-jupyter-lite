@@ -39,7 +39,7 @@ jobs:
           cat CMakeLists.txt
           cp temp-xeus-r/xeus-rConfig.cmake.in ./
           echo "xeus-rConfig.cmake.in: "
-          cat xeus-rConfig.cmke.in
+          cat xeus-rConfig.cmake.in
           rm -rf temp-xeus-r
 
       - name: Install mamba
