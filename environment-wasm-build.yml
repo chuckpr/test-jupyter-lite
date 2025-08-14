@@ -7,8 +7,7 @@ dependencies:
   # Xeus-R
   - cmake
   - pkg-config
-  - emscripten_emscripten-wasm32
-  # - emscripten_emscripten-wasm32==3.1.73
+  - emscripten_emscripten-wasm32==3.1.73
   # Hera
   - r-base
   - r-rlang
@@ -24,3 +23,5 @@ dependencies:
   - jupyterlite-core
   - jupyter_server
   - jupyterlite-xeus
+  # extra 
+  - r-tidyverse
