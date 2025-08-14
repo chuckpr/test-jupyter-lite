@@ -31,23 +31,27 @@ jobs:
         run: |
           echo "Cloning xeus-r repository to get hera directory and CMakeLists.txt..."
           git clone --depth 1 https://github.com/jupyter-xeus/xeus-r.git temp-xeus-r
+
           cp -r temp-xeus-r/include/ ./
           echo "include/xeus-r directory contents:"
           ls -la include/xeus-r/
-          echo "cmake directory contents:"
-          ls -la cmake/
+
           cp -r temp-xeus-r/cmake ./
           echo "cmake directory contents:"
           ls -la cmake/
+
           cp -r temp-xeus-r/hera ./
           echo "hera directory contents:"
           ls -la hera/
+
           cp temp-xeus-r/CMakeLists.txt ./
           echo "CMakeLists.txt: "
           cat CMakeLists.txt
+
           cp temp-xeus-r/xeus-rConfig.cmake.in ./
           echo "xeus-rConfig.cmake.in: "
           cat xeus-rConfig.cmake.in
+
           rm -rf temp-xeus-r
 
       - name: Install mamba
